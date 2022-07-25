@@ -1,0 +1,152 @@
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+int Max[10][10], need[10][10], alloc[10][10], avail[10],
+completed[10], request[10], sseq[10], ch1;
+int p,r,i,j,k, new;
+int safeseq();
+int main()
+{
+int violationcheck, waitcheck;
+printf(&quot;Enter the number of process :&quot;);
+scanf(&quot;%d&quot;, &amp;p);
+printf(&quot;Enter the no of resources :&quot;);
+scanf(&quot;%d&quot;, &amp;r);
+printf(&quot;Enter the Max matrix for each process:\n&quot;);
+for(i=0; i&lt;p;i++)
+{
+printf(&quot;For process %d :&quot;, i+1);
+for(j=0;j&lt;r;j++)
+scanf(&quot;%d&quot;, &amp;Max[i][j]);
+}
+printf(&quot;Enter the allocation for each process :\n&quot;);
+for(i=0;i&lt;p;i++)
+{
+printf(&quot;For process %d :&quot;, i+1);
+for(j=0; j&lt;r;j++)
+scanf(&quot;%d&quot;, &amp;alloc[i][j]);
+}
+printf(&quot;Enter the available Resources :\n&quot;);
+for(i=0;i&lt;r; i++)
+scanf(&quot;%d&quot;,&amp;avail[i]);
+for (i=0;i&lt;p;i++)
+for (j=0;j&lt;r;j++)
+need[i][j] = Max[i][j] - alloc[i][j];
+printf(&quot;\nMax Matrix:\tAllocation matrix:\t Need matrix\n&quot;);
+for(i=0;i&lt;p;i++)
+{
+for(j=0;j&lt;r;j++)
+printf(&quot;%d&quot;, Max[i][j]);
+printf(&quot;\t\t&quot;);
+for(j=0;j&lt;r; j++)
+printf(&quot;%d&quot;, alloc[i][j]);
+printf(&quot;\t\t&quot;);
+for(j=0;j&lt;r; j++)
+printf(&quot;%d&quot;, need[i][j]);
+printf(&quot;\n&quot;);
+}
+ch1=safeseq();
+if(ch1==0)
+{
+printf(&quot;The system is not in safe state\n&quot;);
+exit(0);
+}
+else
+{
+violationcheck=0;
+waitcheck=0;
+printf(&quot;\nRequesting Process ID:\n&quot;);
+scanf(&quot;%d&quot;,&amp;new);
+printf(&quot;Enter the request for process \n&quot;);
+for(j=0;j&lt;r;j++)
+scanf(&quot;%d&quot;, &amp;request[j]);
+for(i=0;i&lt;p;i++)
+{
+if (i==new)
+{
+for(j=0;j&lt;r;j++)
+{
+if(request[j]&gt;need[i][j])
+violationcheck=1;
+if(request[j]&gt;avail[j])
+waitcheck=1;
+}
+if(violationcheck==1)
+{
+printf(&quot;\nThe process exceeds its MAx Needs: Terminated\n&quot;);
+exit(0);
+}
+else if(waitcheck==1)
+{
+printf(&quot;\nlack of resources:process state-wait\n&quot;);
+exit(0);
+}
+else
+{
+for(j=0;j&lt;r;j++)
+{
+avail[j]=avail[j]-request[j];
+alloc[i][j]=alloc[i][j]+request[j];
+need[i][j]= need[i][j]-request[j];
+}}}}
+ch1=safeseq();
+if(ch1==0)
+{
+for(j=0;j&lt;r;j++)
+{
+avail[j]=avail[j]+request[j];
+alloc[new][j]=alloc[new][j]-request[j];
+need[new][j]=need[new][j]+request[j];
+}
+}
+else if(ch1==1)
+printf(&quot;\nRequest Committed\n&quot;);
+}
+}
+int safeseq()
+{ int tj, tk,i,j,k,work[10];
+int check1, check2,ss=0;
+for(j=0;j&lt;r;j++)
+work[j]=avail[j];
+for(j=0;j&lt;p;j++)
+completed[j]=0;
+for(tk=0;tk&lt;r;tk++)
+{
+for(j=0;j&lt;p;j++)
+{
+if(completed[j]==0)
+{
+check1=0;
+for(k=0;k&lt;r;k++)
+if(need[j][k]&lt;=work[k])
+check1++;
+if(check1==r)
+{
+for(k=0;k&lt;r;k++)
+{
+work[k]=work[k]+alloc[j][k];
+completed[j]=1;
+}
+sseq[ss]=j;
+ss++;
+}
+}
+}
+}
+check2=0;
+for(i=0;i&lt;p;i++)
+if(completed[i]==1)
+check2++;
+printf(&quot;\n&quot;);
+if(check2&gt;=p)
+{
+printf(&quot;\nThe System is in Safe State\n&quot;);
+for(tj=0;tj&lt;p;tj++)
+printf(&quot;p%d&quot;,sseq[tj]);
+return 1;
+}
+else
+{ 
+printf(&quot;\nThe system is not in Safe State\n&quot;);
+ return 0;
+}
+}
